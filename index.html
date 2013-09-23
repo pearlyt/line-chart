@@ -1,2 +1,325 @@
-<!DOCTYPE html>
-<h1> testing</h1>
+<style>
+    /* Our css will go here */
+
+
+svg{
+  	border:1px green;
+    }
+
+#subhead {
+    color: navy;
+    position: absolute;
+    top:36px;
+    left: 12px;
+    font: Helvetica, bold;
+    font-size: 20px;
+    }
+
+#textbox{
+    width:420px;
+    height:75px;
+    position: absolute;
+    top: 81px; 
+    left: 8px;
+    padding: 4px;
+    border: solid lightblue;
+    font: blue;
+    background: white;
+    }
+    
+#whitesox{
+  color: maroon;
+  position:absolute;
+  top:145px;
+  left:16px;
+}
+
+#nyyankees{
+  color:green;
+  position: absolute;
+  top:125px;
+  left:16px;
+}
+
+#strikeouts-headline {
+    color:navy;
+    font-size: 50px;
+    }
+
+.g-text-annotation {
+    font-size: 11px;
+    font-family: Arial;
+    fill: #999;
+    text-anchor: middle;
+    pointer-events: none;
+    }
+
+.line {
+    stroke:navy;
+    fill:none;
+    stroke-width:2px; 
+    }
+
+.whitesoxline{
+    stroke: pink;
+    fill:none;
+    stroke-width:1px;
+    }
+
+.newyorkline{
+    fill:none;
+    stroke:lightgreen;
+    stroke-width:1px;
+    }
+
+.domain {
+    /*This is the tickerline*/
+    fill: none;
+    stroke: navy;
+    }
+
+.tick line {
+    stroke: navy;
+    }
+
+.tick {
+    font-size: 12px;
+    }
+
+
+
+</style>
+
+<h1 id="strikeouts-headline">Oakland Athletic's</h1>
+<p id = "subhead">Setting strikeout records.</p>
+<div id = "textbox"> They've won thousands of fans and hundreds of games, but the As's have also had the most number of strikeouts over the years.</div>
+<div id = "whitesox"> - Chicago White Sox </div>
+<div id = "nyyankees"> - New York Yankees </div>
+<div class="chart"></div>
+
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+
+
+<script type:"text/javascript">
+  // Our javascript code will go here
+
+var margin = {top: 20, right: 20, bottom: 40, left: 20};
+    width = 850 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var svg = d3.select(".chart").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+    var height = 450;
+    var width = 800;
+
+    // var svg = d3.select(".chart")
+    //     .append("svg")
+    //     .attr("width", width)
+    //     .attr("height", height);
+
+
+var xScale = d3.scale.linear()
+    .domain([1900, 2012])
+    .range([0, width]);
+    
+var yScale = d3.scale.linear()
+    .domain([0, 10])
+    .range([height, 0]);
+    
+var xAxis = d3.svg.axis()
+    .tickFormat(function(d) { return d; })
+    .orient("bottom")
+    .scale(xScale);
+
+var yAxis = d3.svg.axis()
+    .scale(yScale)
+    .orient("right")
+    .tickSize(-width - margin.left - margin.right)
+    
+var line = d3.svg.line()
+    .x(function(d) { return xScale(d.year); })
+    .y(function(d) { return yScale(d.kpg); });
+
+var whitesoxline = d3.svg.line()
+    .x(function(d) { return xScale(d.year); })
+    .y(function(d) { return yScale(d.kpg); });
+    
+var newyorkline = d3.svg.line()
+    .x(function(d) { return xScale(d.year); })
+    .y(function(d) { return yScale(d.kpg); });
+    
+    // var avgLine = d3.svg.line()
+    //    .x(function(d) { return xScale(d.key); })
+    //    .y(function(d) { return yScale(d.values.leagueAverage); 
+
+
+d3.csv("strikeouts.csv", function(data){			
+    data.forEach(function(row) {
+    row.so = +row.so;
+    row.year = +row.year;
+    row.g = +row.g;
+    //We also want to calculate the strikeouts per game and store it as a new column
+    row.kpg = row.so / row.g;
+    });
+
+d3.select(".chart").append("button").text("Blamo!").on("click", function() {
+    d3.selectAll("circle")
+    .transition()
+    .duration(2000)
+    .ease("bounce")
+    .delay(function(d, i){ return i * 50})
+    .attr("cy", height)
+    .attr("r", 7);
+    });
+
+    var oaklandData = data.filter(function(row) { return row.franchise === "OAK"; });
+
+    var whitesoxData = data.filter(function(row) { return row.franchise === "CHW"; });
+
+    var newyorkData = data.filter(function(row) { return row.franchise === "NYY"; });
+
+    console.log(data);
+
+    // var node = svg.selectAll("g")
+    //                 .data(data)
+    //                 .enter()
+    //                 .append("g");
+    // 
+    // node.append("circle")
+    //   .attr("class", "dot")
+    //   .attr("cx", function(d) { return x(d.x); })
+    //   .attr("cy", function(d) { return y(d.y); })
+    //   .attr("r", 12);
+    // 
+    // node.append("text")
+    //   .attr("x", function(d) { return x(d.x); })
+    //   .attr("y", function(d) { return y(d.y); })
+    //   .text("fooLabelsOfScatterPoints");
+
+svg.selectAll(".dot")
+    .data(oaklandData)
+.enter().append("circle")
+    .attr("class", "dot")
+    .attr("r", 4)
+    .attr("cx", function(d, i) { return xScale(d.year); })
+    .attr("cy", function(d) { return yScale(d.kpg); });
+
+svg.append("path")
+	  .attr("class", "line")
+	  .attr("d", line(oaklandData));
+		  
+svg.append("path")
+	  .attr("class", "whitesoxline")
+	  .attr("d", whitesoxline(whitesoxData));
+	  
+svg.append("path")
+	  .attr("class", "newyorkline")
+	  .attr("d", newyorkline(newyorkData));
+		  
+svg.append("g")
+    .attr("class", "axis")
+    .attr("transform", "translate(0, " + height + ")")
+    .call(xAxis);
+      
+svg.append("g")
+    .attr("class", "axis")
+    .attr("transform", "translate(" + width + ",0)")
+    .call(yAxis);
+
+// svg.selectAll(".g-note")
+//     .data([
+//     "Strike zone enlarged",
+//     "from 1963-68."
+//     ])
+//     .enter().append("text")
+//     .classed("g-text-annotation",true)
+//     .attr("x", x(1963))
+//     .attr("y", y(2.6))
+//     .attr("dy", function(d, i) { return i * 1.3 + "em"; })
+//     .text(function(d) { return d; });
+// 
+// svg.selectAll(".g-note")
+//     .data([
+//     "Pitching had become so dominant",
+//     "in the 1960s that the mound",
+//     "was lowered in 1969."
+//     ])
+//     .enter().append("text")
+//     .classed("g-text-annotation",true)
+//     .attr("x", x(1969))
+//     .attr("y", y(8.7))
+//     .attr("dy", function(d, i) { return i * 1.3 + "em"; })
+//     .text(function(d) { return d; });
+// 
+// svg.selectAll(".g-note")
+//     .data([
+//     "Mitchell report",
+//     "on steroids.",
+//     ])
+//     .enter().append("text")
+//     .classed("g-text-annotation",true)
+//     .attr("x", x(2008))
+//     .attr("y", y(3.6))
+//     .attr("dy", function(d, i) { return i * 1.3 + "em"; })
+//     .text(function(d) { return d; });
+// 
+// svg.selectAll(".g-note")
+//     .data([
+//       "U.S. enters",
+//       "World War I."
+//     ])
+//     .enter().append("text")
+//     .classed("g-text-annotation",true)
+//     .attr("x", x(1917))
+//     .attr("y", y(1.08))
+//     .attr("dy", function(d, i) { return i * 1.3 + "em"; })
+//     .text(function(d) { return d; });
+// 
+// svg.selectAll(".g-note")
+//     .data([
+//     "Designated hitter",
+//     "rule took effect.",
+//     ])
+//     .enter().append("text")
+//     .classed("g-text-annotation",true)
+//     .attr("x", x(1973))
+//     .attr("y", y(1.6))
+//     .attr("dy", function(d, i) { return i * 1.3 + "em"; })
+//     .text(function(d) { return d; });
+// 
+// svg.selectAll(".g-note")
+//     .data([
+//     "Players return",
+//     "from World War II."
+//     ])
+//     .enter().append("text")
+//     .classed("g-text-annotation",true)
+//     .attr("x", x(1946))
+//     .attr("y", y(1.6))
+//     .attr("dy", function(d, i) { return i * 1.3 + "em"; })
+//     .text(function(d) { return d; });
+     
+// nested = d3.nest()
+//     .key(function(d) { return d.year; })
+//     .rollup(function(values) {
+//     return {
+//     totalSO: d3.sum(values, function(d) { return d.so }),
+//     totalGames: d3.sum(values, function(d) { return d.g }),
+//     leagueAverage: d3.sum(values, function(d) { return d.so }) / d3.sum(values, function(d) { return d.g })
+//     };
+//     })
+//     .entries(data);       
+//   
+//     svg.append("path")
+//     .attr("class", "avg-line")
+//     .attr("d", avgLine(nested));
+       
+
+});
+
+</script>
